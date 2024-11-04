@@ -1,9 +1,15 @@
 import logging
 import requests
 import json
+import sys
+import os
 from telegram import Update
 from telegram.ext import Updater, CommandHandler, MessageHandler, Filters, CallbackContext
-import config  # Import configuration from config.py
+
+# Set the path to the parent directory to import config.py
+sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
+
+import config  # Now this will import the config from the parent directory
 
 # Logging setup
 logging.basicConfig(format='%(asctime)s - %(name)s - %(levelname)s - %(message)s', level=logging.INFO)
