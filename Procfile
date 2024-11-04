@@ -1,2 +1,2 @@
-web: python UTTAM/main.py
+worker: python UTTAM/main.py
 
