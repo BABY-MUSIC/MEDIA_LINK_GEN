@@ -1,69 +1,76 @@
-import logging
-import requests
-import json
 import os
-import asyncio
-from flask import Flask
-from telegram import Update
-from telegram.ext import ApplicationBuilder, CommandHandler, MessageHandler, filters, CallbackContext
-import threading
+import requests
+from telegram import Update, InlineKeyboardButton, InlineKeyboardMarkup
+from telegram.ext import Updater, CommandHandler, MessageHandler, Filters, CallbackContext
 
-TELEGRAM_BOT_TOKEN = 'YOUR_TELEGRAM_BOT_TOKEN'
-IMGBB_API_KEY = 'YOUR_IMGBB_API_KEY'
+# Bot token
+TOKEN = 'YOUR_BOT_TOKEN'
 
-logging.basicConfig(format='%(asctime)s - %(name)s - %(levelname)s - %(message)s', level=logging.INFO)
+def upload_file(file_path):
+    url = "https://catbox.moe/user/api.php"
+    data = {"reqtype": "fileupload", "json": "true"}
+    with open(file_path, "rb") as f:
+        files = {"fileToUpload": f}
+        response = requests.post(url, data=data, files=files)
 
-app = Flask(__name__)
-
-@app.route('/')
-def home():
-    return "Flask is running!"
+    if response.status_code == 200:
+        return True, response.json().get('url', 'No URL found')
+    else:
+        return False, f"Error: {response.status_code} - {response.text}"
 
 def start(update: Update, context: CallbackContext) -> None:
-    update.message.reply_text('Hello! Send me a photo or video, and I will upload it to ImgBB.')
-
-def upload_to_imgbb(file_url: str) -> str:
-    response = requests.post(
-        'https://api.imgbb.com/1/upload',
-        data={
-            'key': IMGBB_API_KEY,
-            'image': file_url
-        }
-    )
-    data = json.loads(response.text)
-    if data['success']:
-        return data['data']['url']
-    else:
-        return 'Error uploading image'
+    update.message.reply_text("Send me a media file to upload on Catbox!")
 
 def handle_media(update: Update, context: CallbackContext) -> None:
-    if update.message.photo:
-        file = update.message.photo[-1].get_file()
-        file_url = file.file_path
-        imgbb_url = upload_to_imgbb(file_url)
-        update.message.reply_text(f'Here is your link: {imgbb_url}')
-    
-    elif update.message.video:
-        file = update.message.video.get_file()
-        file_url = file.file_path
-        imgbb_url = upload_to_imgbb(file_url)
-        update.message.reply_text(f'Here is your link: {imgbb_url}')
+    media = update.message.reply_to_message
+    if not media:
+        return update.message.reply_text("Please reply to a media file.")
 
-async def start_bot() -> None:
-    application = ApplicationBuilder().token(TELEGRAM_BOT_TOKEN).build()
-    application.add_handler(CommandHandler("start", start))
-    application.add_handler(MessageHandler(filters.PHOTO | filters.VIDEO, handle_media))
-    
-    await application.run_polling()
+    file_size = 0
+    if media.photo:
+        file_size = media.photo.file_size
+    elif media.video:
+        file_size = media.video.file_size
+    elif media.document:
+        file_size = media.document.file_size
 
-def run_flask():
-    port = int(os.environ.get("PORT", 8000))
-    app.run(host='0.0.0.0', port=port)
+    if file_size > 200 * 1024 * 1024:
+        return update.message.reply_text("Please provide a media file under 200MB.")
+
+    try:
+        text = update.message.reply_text("Processing...")
+
+        local_path = media.download()  # Download the file
+
+        text.edit_text("Uploading to Catbox...")
+        success, upload_path = upload_file(local_path)
+
+        if success:
+            text.edit_text(
+                f"Upload successful! [Click here]({upload_path})",
+                reply_markup=InlineKeyboardMarkup([
+                    [InlineKeyboardButton("View File", url=upload_path)]
+                ])
+            )
+        else:
+            text.edit_text(f"An error occurred while uploading: {upload_path}")
+
+        os.remove(local_path)  # Clean up local file
+
+    except Exception as e:
+        text.edit_text(f"File upload failed: {e}")
+        if os.path.exists(local_path):
+            os.remove(local_path)
+
+def main() -> None:
+    updater = Updater(TOKEN)
+    dispatcher = updater.dispatcher
+
+    dispatcher.add_handler(CommandHandler("start", start))
+    dispatcher.add_handler(MessageHandler(Filters.reply & (Filters.photo | Filters.video | Filters.document), handle_media))
+
+    updater.start_polling()
+    updater.idle()
 
 if __name__ == '__main__':
-    # Start the Flask app in a separate thread
-    flask_thread = threading.Thread(target=run_flask)
-    flask_thread.start()
-
-    # Start the Telegram bot
-    asyncio.run(start_bot())
+    main()
