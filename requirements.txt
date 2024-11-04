@@ -1,5 +1,5 @@
 python-telegram-bot==21.1.1
 requests
 tgcrypto
-pyrogram
+pyrogram==2.0.106
 Flask
