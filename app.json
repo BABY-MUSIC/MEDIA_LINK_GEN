@@ -1,0 +1,24 @@
+{
+  "name": "Telegram Bot",
+  "description": "A simple Telegram bot to upload images and videos to ImgBB.",
+  "env": {
+    "IMGBB_API_KEY": {
+      "description": "Your ImgBB API key",
+      "required": true
+    },
+    "TELEGRAM_BOT_TOKEN": {
+      "description": "Your Telegram bot token",
+      "required": true
+    }
+  },
+  "scripts": {
+    "start": "python UTTAM/main.py"
+  },
+  "image": "my-telegram-bot",
+  "addons": [],
+  "buildpacks": [
+    {
+      "url": "heroku/python"
+    }
+  ]
+}
