@@ -1,12 +1,11 @@
 import logging
 import requests
 import json
-import sys
 import os
 import threading
 from flask import Flask
 from telegram import Update
-from telegram.ext import Updater, CommandHandler, MessageHandler, filters, CallbackContext
+from telegram.ext import ApplicationBuilder, CommandHandler, MessageHandler, filters, CallbackContext
 
 # Set your API keys directly here
 TELEGRAM_BOT_TOKEN = '7472927630:AAHueShYWJSd-n0rPFZOcjM-lV9W7zcqRrQ'
@@ -53,19 +52,18 @@ def handle_media(update: Update, context: CallbackContext) -> None:
         update.message.reply_text(f'Here is your link: {imgbb_url}')
 
 def start_bot() -> None:
-    updater = Updater(TELEGRAM_BOT_TOKEN)
-    dispatcher = updater.dispatcher
+    application = ApplicationBuilder().token(TELEGRAM_BOT_TOKEN).build()
+    
+    application.add_handler(CommandHandler("start", start))
+    application.add_handler(MessageHandler(filters.PHOTO | filters.VIDEO, handle_media))
 
-    dispatcher.add_handler(CommandHandler("start", start))
-    dispatcher.add_handler(MessageHandler(filters.PHOTO | filters.VIDEO, handle_media))
-
-    updater.start_polling()
-    updater.idle()
+    application.run_polling()
 
 if __name__ == '__main__':
     # Start the Telegram bot in a separate thread
     bot_thread = threading.Thread(target=start_bot)
     bot_thread.start()
     
-    # Run the Flask app on port 8000
-    app.run(host='0.0.0.0', port=8000)
+    # Run the Flask app on the port defined by Heroku
+    port = int(os.environ.get("PORT", 8000))  # Default to 8000 if not set
+    app.run(host='0.0.0.0', port=port)
