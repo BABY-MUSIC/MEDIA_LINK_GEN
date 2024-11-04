@@ -3,6 +3,8 @@ import requests
 import json
 import sys
 import os
+import threading
+from flask import Flask
 from telegram import Update
 from telegram.ext import Updater, CommandHandler, MessageHandler, Filters, CallbackContext
 
@@ -13,6 +15,13 @@ import config  # Now this will import the config from the parent directory
 
 # Logging setup
 logging.basicConfig(format='%(asctime)s - %(name)s - %(levelname)s - %(message)s', level=logging.INFO)
+
+# Initialize Flask app
+app = Flask(__name__)
+
+@app.route('/')
+def home():
+    return "Flask is running!"
 
 def start(update: Update, context: CallbackContext) -> None:
     update.message.reply_text('Hello! Send me a photo or video, and I will upload it to ImgBB.')
@@ -44,9 +53,8 @@ def handle_media(update: Update, context: CallbackContext) -> None:
         imgbb_url = upload_to_imgbb(file_url)
         update.message.reply_text(f'Here is your link: {imgbb_url}')
 
-def main() -> None:
+def start_bot() -> None:
     updater = Updater(config.TELEGRAM_BOT_TOKEN)
-
     dispatcher = updater.dispatcher
 
     dispatcher.add_handler(CommandHandler("start", start))
@@ -56,4 +64,9 @@ def main() -> None:
     updater.idle()
 
 if __name__ == '__main__':
-    main()
+    # Start the Telegram bot in a separate thread
+    bot_thread = threading.Thread(target=start_bot)
+    bot_thread.start()
+    
+    # Run the Flask app on port 8000
+    app.run(host='0.0.0.0', port=8000)
