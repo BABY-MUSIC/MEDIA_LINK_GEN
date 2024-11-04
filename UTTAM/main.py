@@ -7,8 +7,8 @@ from flask import Flask
 from telegram import Update
 from telegram.ext import ApplicationBuilder, CommandHandler, MessageHandler, filters, CallbackContext
 
-TELEGRAM_BOT_TOKEN = 'YOUR_TELEGRAM_BOT_TOKEN'
-IMGBB_API_KEY = 'YOUR_IMGBB_API_KEY'
+TELEGRAM_BOT_TOKEN = '7472927630:AAHueShYWJSd-n0rPFZOcjM-lV9W7zcqRrQ'
+IMGBB_API_KEY = '0d6d275cbd8e8b82ce278e742667d40c'
 
 logging.basicConfig(format='%(asctime)s - %(name)s - %(levelname)s - %(message)s', level=logging.INFO)
 
@@ -17,10 +17,6 @@ app = Flask(__name__)
 @app.route('/')
 def home():
     return "Flask is running!"
-
-@app.route('/start')
-def start_command():
-    return "Send a message to the Telegram bot to start!"
 
 def start(update: Update, context: CallbackContext) -> None:
     update.message.reply_text('Hello! Send me a photo or video, and I will upload it to ImgBB.')
@@ -59,7 +55,12 @@ async def start_bot() -> None:
     
     await application.run_polling()
 
-if __name__ == '__main__':
-    asyncio.run(start_bot())
+def run_flask():
     port = int(os.environ.get("PORT", 8000))
     app.run(host='0.0.0.0', port=port)
+
+if __name__ == '__main__':
+    # Start the Flask app in a separate thread
+    loop = asyncio.get_event_loop()
+    loop.run_in_executor(None, run_flask)  # Run Flask in an executor
+    asyncio.run(start_bot())  # Start the bot
