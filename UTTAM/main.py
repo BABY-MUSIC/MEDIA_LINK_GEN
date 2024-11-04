@@ -2,7 +2,6 @@ import logging
 import requests
 import json
 import os
-import threading
 from flask import Flask
 from telegram import Update
 from telegram.ext import ApplicationBuilder, CommandHandler, MessageHandler, filters, CallbackContext
@@ -51,19 +50,20 @@ def handle_media(update: Update, context: CallbackContext) -> None:
         imgbb_url = upload_to_imgbb(file_url)
         update.message.reply_text(f'Here is your link: {imgbb_url}')
 
-def start_bot() -> None:
+async def start_bot() -> None:
     application = ApplicationBuilder().token(TELEGRAM_BOT_TOKEN).build()
     
     application.add_handler(CommandHandler("start", start))
     application.add_handler(MessageHandler(filters.PHOTO | filters.VIDEO, handle_media))
 
-    application.run_polling()
+    await application.run_polling()
 
 if __name__ == '__main__':
-    # Start the Telegram bot in a separate thread
-    bot_thread = threading.Thread(target=start_bot)
-    bot_thread.start()
-    
+    # Start the Telegram bot in the main thread
+    import asyncio
+
+    bot_task = asyncio.create_task(start_bot())
+
     # Run the Flask app on the port defined by Heroku
     port = int(os.environ.get("PORT", 8000))  # Default to 8000 if not set
     app.run(host='0.0.0.0', port=port)
