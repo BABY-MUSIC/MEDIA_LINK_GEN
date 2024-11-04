@@ -2,6 +2,7 @@ import logging
 import requests
 import json
 import os
+import asyncio
 from flask import Flask
 from telegram import Update
 from telegram.ext import ApplicationBuilder, CommandHandler, MessageHandler, filters, CallbackContext
@@ -58,12 +59,11 @@ async def start_bot() -> None:
 
     await application.run_polling()
 
+# Run the Flask app and Telegram bot
 if __name__ == '__main__':
-    # Start the Telegram bot in the main thread
-    import asyncio
-
-    bot_task = asyncio.create_task(start_bot())
-
+    loop = asyncio.get_event_loop()
+    loop.create_task(start_bot())
+    
     # Run the Flask app on the port defined by Heroku
     port = int(os.environ.get("PORT", 8000))  # Default to 8000 if not set
     app.run(host='0.0.0.0', port=port)
