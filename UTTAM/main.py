@@ -8,10 +8,9 @@ from flask import Flask
 from telegram import Update
 from telegram.ext import Updater, CommandHandler, MessageHandler, Filters, CallbackContext
 
-# Set the path to the parent directory to import config.py
-sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
-
-import config  # Now this will import the config from the parent directory
+# Set your API keys directly here
+TELEGRAM_BOT_TOKEN = '7472927630:AAHueShYWJSd-n0rPFZOcjM-lV9W7zcqRrQ'
+IMGBB_API_KEY = '0d6d275cbd8e8b82ce278e742667d40c'
 
 # Logging setup
 logging.basicConfig(format='%(asctime)s - %(name)s - %(levelname)s - %(message)s', level=logging.INFO)
@@ -30,7 +29,7 @@ def upload_to_imgbb(file_url: str) -> str:
     response = requests.post(
         'https://api.imgbb.com/1/upload',
         data={
-            'key': config.IMGBB_API_KEY,
+            'key': IMGBB_API_KEY,
             'image': file_url
         }
     )
@@ -54,7 +53,7 @@ def handle_media(update: Update, context: CallbackContext) -> None:
         update.message.reply_text(f'Here is your link: {imgbb_url}')
 
 def start_bot() -> None:
-    updater = Updater(config.TELEGRAM_BOT_TOKEN)
+    updater = Updater(TELEGRAM_BOT_TOKEN)
     dispatcher = updater.dispatcher
 
     dispatcher.add_handler(CommandHandler("start", start))
