@@ -4,12 +4,12 @@
   "env": {
     "IMGBB_API_KEY": {
       "description": "Your ImgBB API key",
-      "required": true
+      "required": true,
       "value": "0d6d275cbd8e8b82ce278e742667d40c"
     },
     "TELEGRAM_BOT_TOKEN": {
       "description": "Your Telegram bot token",
-      "required": true
+      "required": true,
       "value": "7472927630:AAHueShYWJSd-n0rPFZOcjM-lV9W7zcqRrQ"
     }
   },
