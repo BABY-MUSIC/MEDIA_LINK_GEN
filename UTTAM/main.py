@@ -6,9 +6,10 @@ import asyncio
 from flask import Flask
 from telegram import Update
 from telegram.ext import ApplicationBuilder, CommandHandler, MessageHandler, filters, CallbackContext
+import threading
 
-TELEGRAM_BOT_TOKEN = '7472927630:AAHueShYWJSd-n0rPFZOcjM-lV9W7zcqRrQ'
-IMGBB_API_KEY = '0d6d275cbd8e8b82ce278e742667d40c'
+TELEGRAM_BOT_TOKEN = 'YOUR_TELEGRAM_BOT_TOKEN'
+IMGBB_API_KEY = 'YOUR_IMGBB_API_KEY'
 
 logging.basicConfig(format='%(asctime)s - %(name)s - %(levelname)s - %(message)s', level=logging.INFO)
 
@@ -61,6 +62,8 @@ def run_flask():
 
 if __name__ == '__main__':
     # Start the Flask app in a separate thread
-    loop = asyncio.get_event_loop()
-    loop.run_in_executor(None, run_flask)  # Run Flask in an executor
-    asyncio.run(start_bot())  # Start the bot
+    flask_thread = threading.Thread(target=run_flask)
+    flask_thread.start()
+
+    # Start the Telegram bot
+    asyncio.run(start_bot())
