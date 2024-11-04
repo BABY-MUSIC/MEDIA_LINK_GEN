@@ -4,7 +4,7 @@ from telegram import Update, InlineKeyboardButton, InlineKeyboardMarkup
 from telegram.ext import Updater, CommandHandler, MessageHandler, Filters, CallbackContext
 
 # Bot token
-TOKEN = 'YOUR_BOT_TOKEN'
+TOKEN = '7472927630:AAHueShYWJSd-n0rPFZOcjM-lV9W7zcqRrQ'
 
 def upload_file(file_path):
     url = "https://catbox.moe/user/api.php"
