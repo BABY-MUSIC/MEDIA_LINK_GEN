@@ -6,7 +6,7 @@ import os
 import threading
 from flask import Flask
 from telegram import Update
-from telegram.ext import Updater, CommandHandler, MessageHandler, Filters, CallbackContext
+from telegram.ext import Updater, CommandHandler, MessageHandler, filters, CallbackContext
 
 # Set your API keys directly here
 TELEGRAM_BOT_TOKEN = '7472927630:AAHueShYWJSd-n0rPFZOcjM-lV9W7zcqRrQ'
@@ -57,7 +57,7 @@ def start_bot() -> None:
     dispatcher = updater.dispatcher
 
     dispatcher.add_handler(CommandHandler("start", start))
-    dispatcher.add_handler(MessageHandler(Filters.photo | Filters.video, handle_media))
+    dispatcher.add_handler(MessageHandler(filters.PHOTO | filters.VIDEO, handle_media))
 
     updater.start_polling()
     updater.idle()
